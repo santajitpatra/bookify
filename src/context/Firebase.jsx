@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 import {
   getAuth,
@@ -53,11 +53,15 @@ export const FirebaseProvider = (props) => {
   const signinUserWithEmailAndPassword = (email, password) => {
     signInWithEmailAndPassword(firebaseAuth, email, password);
   };
-  console.log(user);
+
+  const signinUserWithGoogle = () => {
+    signInWithPopup(firebaseAuth, googleProvider);
+  };
+
   const handleCreateNewListing = async (name, isbn, price, cover) => {
     const imageRef = ref(storage, `uploads/images/${Date.now()}-${cover.name}`);
     const uploadResult = await uploadBytes(imageRef, cover);
-return   await addDoc(collection(firestore, "book"), {
+    return await addDoc(collection(firestore, "books"), {
       name,
       isbn,
       price,
@@ -69,9 +73,13 @@ return   await addDoc(collection(firestore, "book"), {
     });
   };
 
-  const signinUserWithGoogle = () => {
-    signInWithPopup(firebaseAuth, googleProvider);
+  const listAllBooks = () => {
+    return getDocs(collection(firestore, "books"));
   };
+  const getImageURL = (path) => {
+    return getDownloadURL(ref(storage, path));
+  };
+
   const isLoggedIn = user ? true : false;
 
   return (
@@ -82,6 +90,8 @@ return   await addDoc(collection(firestore, "book"), {
         signinUserWithGoogle,
         isLoggedIn,
         handleCreateNewListing,
+        listAllBooks,
+        getImageURL,
       }}
     >
       {props.children}
