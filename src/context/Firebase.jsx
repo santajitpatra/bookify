@@ -1,12 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
+
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from "firebase/auth";
 
 const FirebaseContext = createContext(null);
@@ -25,21 +28,23 @@ export const useFirebase = () => useContext(FirebaseContext);
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const firebaseAuth = getAuth(firebaseApp);
+const firestore = getFirestore(firebaseApp);
+const storage = getStorage(firebaseApp);
 
 const googleProvider = new GoogleAuthProvider();
 
 export const FirebaseProvider = (props) => {
   const [user, setUser] = useState(null);
-  
-useEffect(() => {
-  onAuthStateChanged(firebaseAuth, (user) => {
-    if (user) {
-      setUser(user);
-    } else {
-      setUser(null);
-    }
-  })
-}, []);
+
+  useEffect(() => {
+    onAuthStateChanged(firebaseAuth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+  }, []);
 
   const signupUserWithEmailAndPassword = (email, password) => {
     createUserWithEmailAndPassword(firebaseAuth, email, password);
@@ -47,6 +52,21 @@ useEffect(() => {
 
   const signinUserWithEmailAndPassword = (email, password) => {
     signInWithEmailAndPassword(firebaseAuth, email, password);
+  };
+  console.log(user);
+  const handleCreateNewListing = async (name, isbn, price, cover) => {
+    const imageRef = ref(storage, `uploads/images/${Date.now()}-${cover.name}`);
+    const uploadResult = await uploadBytes(imageRef, cover);
+return   await addDoc(collection(firestore, "book"), {
+      name,
+      isbn,
+      price,
+      imageURL: uploadResult.ref.fullPath,
+      userID: user.uid,
+      userEmail: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+    });
   };
 
   const signinUserWithGoogle = () => {
@@ -61,6 +81,7 @@ useEffect(() => {
         signinUserWithEmailAndPassword,
         signinUserWithGoogle,
         isLoggedIn,
+        handleCreateNewListing,
       }}
     >
       {props.children}
