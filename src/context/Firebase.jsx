@@ -108,16 +108,19 @@ export const FirebaseProvider = (props) => {
     return result;
   };
 
-  const fetchMyOrders = async () => {
-    if (!user) {
-      return null;
-    }
+  const fetchMybooks = async (userID) => {
     const collectionRef = collection(firestore, "books");
-    const q = query(collectionRef, where("userID", "==", user.uid));
+    const q = query(collectionRef, where("userID", "==", userID));
 
     const result = await getDocs(q);
-    console.log(result);
+    return result;
   };
+
+    const getOrders = async (bookId) => {
+      const collectionRef = collection(firestore, "books", bookId, "orders");
+      const result = await getDocs(collectionRef)
+      return result;
+    };
 
   const isLoggedIn = user ? true : false;
 
@@ -133,7 +136,9 @@ export const FirebaseProvider = (props) => {
         getImageURL,
         getBookById,
         placeOrder,
-        fetchMyOrders,
+        fetchMybooks,
+        user,
+        getOrders,
       }}
     >
       {props.children}

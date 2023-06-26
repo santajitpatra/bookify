@@ -7,16 +7,14 @@ import Home from "./pages/Home";
 import Details from "./pages/Details";
 import Orders from "./pages/Orders";
 
-
 // Component
-import NavbarComponent from "./components/Navbar"
+import NavbarComponent from "./components/Navbar";
 // css
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import ViewOrderDetails from "./pages/ViewOrderDetails";
 
 function App() {
-
-
   return (
     <div className="">
       <NavbarComponent />
@@ -27,6 +25,7 @@ function App() {
         <Route path="/book/list" element={<ListingPage />} />
         <Route path="/book/view/:bookId" element={<Details />} />
         <Route path="/book/orders" element={<Orders />} />
+        <Route path="/book/orders/:bookId" element={<ViewOrderDetails />} />
         <Route path="*" element={<h1>404</h1>} />
       </Routes>
     </div>
