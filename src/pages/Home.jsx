@@ -15,7 +15,7 @@ const Home = () => {
     <div className="container mt-5">
       <CardGroup>
         {books.map((book) => (
-          <BookCard key={book.id} {...book.data()} />
+          <BookCard key={book.id} id={book.id} {...book.data()} />
         ))}
       </CardGroup>
     </div>

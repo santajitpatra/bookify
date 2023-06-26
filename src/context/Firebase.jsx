@@ -1,6 +1,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  getDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 import {
@@ -80,6 +89,36 @@ export const FirebaseProvider = (props) => {
     return getDownloadURL(ref(storage, path));
   };
 
+  const getBookById = async (id) => {
+    const docRef = doc(firestore, "books", id);
+    const result = await getDoc(docRef);
+    return result;
+  };
+
+  const placeOrder = async (bookId, qty) => {
+    const collectionRef = collection(firestore, "books", bookId, "orders");
+    const result = await addDoc(collectionRef, {
+      userID: user.uid,
+      userEmail: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      qty: Number(qty),
+    });
+
+    return result;
+  };
+
+  const fetchMyOrders = async () => {
+    if (!user) {
+      return null;
+    }
+    const collectionRef = collection(firestore, "books");
+    const q = query(collectionRef, where("userID", "==", user.uid));
+
+    const result = await getDocs(q);
+    console.log(result);
+  };
+
   const isLoggedIn = user ? true : false;
 
   return (
@@ -92,6 +131,9 @@ export const FirebaseProvider = (props) => {
         handleCreateNewListing,
         listAllBooks,
         getImageURL,
+        getBookById,
+        placeOrder,
+        fetchMyOrders,
       }}
     >
       {props.children}
